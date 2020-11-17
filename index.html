@@ -1,0 +1,801 @@
+<!--493-370-82-59-->
+<!--404-271-0-17-->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-size: 16px;
+    font-weight: 300;
+    font-family: 'Questrial', sans-serif;
+    color: #121212;
+  }
+  h1 {
+    font-size: 22px;
+    font-family: 'Press Start 2P', cursive;
+    color: #000000;
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
+  h2, h3 {
+    font-family: 'Questrial', sans-serif;
+    src: URL('fonts/Questrial-Regular.ttf');
+    color: #121212;
+  }
+  h5 {
+    text-align: middle;
+    font-family: 'Questrial', sans-serif;
+    src: URL('fonts/Questrial-Regular.ttf');
+    font-size: 16px;
+    font-weight: 300;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    margin-right: 200px;
+    margin-left: 200px;
+  }
+  h6 {
+    font-family: 'Questrial', sans-serif;
+    src: URL('fonts/Questrial-Regular.ttf');
+    font-size: 16px;
+    font-weight: 300;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    margin-right: 0px;
+    margin-left: 0px;
+  }
+  figcaption {
+    text-align: middle;
+    font-family: 'Questrial', sans-serif;
+    src: URL('fonts/Questrial-Regular.ttf');
+    font-size: 12px;
+    font-weight: 300;
+    margin-top: 0px;
+    margin-bottom: 15px;
+  }
+  p {
+    text-align: justify;
+    -moz-text-align-last: center;
+    text-align-last: center;
+    font-family: 'Questrial', sans-serif;
+    src: URL('fonts/Questrial-Regular.ttf');
+    font-size: 16px;
+    font-weight: 300;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    margin-right: 200px;
+    margin-left: 200px;
+  }
+  h4 {
+    font-family: 'Pinyon Script', cursive;
+    font-size: 56px;
+    color: #000000;
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
+
+</style>
+<title>Facial Keypoint Detection with Neural Networks</title>
+<link rel="stylesheet" type="text/css" href="stylesheet.css" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+</head>
+
+<body>
+<p id="top">
+</p>
+<br><br><br>
+<h4 align="middle" id="Part 0">Facial</h4>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/title.png" class="thumbnail" align="middle" width="350px"/>
+    </td>
+    <td>
+  </table>
+</div>
+<h4 align="middle">with <br>Neural Networks</h4>
+
+<br>
+<h3 align="middle"><span style="color:white">dream and make the new reality with us</span></h3>
+<h2 align="middle"><span style="color:white">xr.berkeley.edu</span></h2>
+<br>
+
+
+
+<h2 align="middle">Table of Contents</h2>
+<h2 align="middle">—</h2>
+<a href="#Part 1"><h6 align="middle">1. Nose Tip Detection</h6></a>
+<a href="#Part 2"><h6 align="middle">2. Full Facial Keypoints Detection</h6></a>
+<a href="#Part 3"><h6 align="middle">3. Training with a Larger Dataset</h6></a>
+<a href="#Part 4"><h6 align="middle">4. Antialiased MaxPool</h6></a>
+<a href="#Part 5"><h6 align="middle">5. AutoMorphing</h6></a>
+<br><br><br><br><br><br><br><br>
+
+<a href="#Part 0"><h2 align="middle"><b>↑</b></h2></a>
+<h3 align="middle" id="Part 1">1. Nose Tip Detection</h3>
+<a href="#Part 2"><h2 align="middle"><b>↓</b></h2></a>
+<br>
+<br>
+
+<p>
+For this first part, I wrote a simple neural network made of three convolutional blocks, and a final fully-connected layer. Data-wise, I extended the PyTorch Dataloader class, by making it accept and return a tuple of an image plus its corresponding nose keypoint. That said, I quickly realized that, a GPU will run out of memory if the images are stored directly on the dataset batches. As, such, I modified the Dataloader to accept an <i>image filename</i> instead, and read the image on the fly, when the training algorithm asks for it. To further save memory, I explicitly clear the GPU cache and call the garbage collector when a training epoch is over.
+</p>
+<p>
+The figure on the left below depicts a sample from the dataloader, consisting of a single 80×60 image and its corresponding keypoint, represented by the x and y coordinates of its pixel location. Moreover, for this and all subsequent parts, I decided to set the batch size to 8 such samples, given that larger batch sizes often made my GPU run out of memory, without confering much of a training advantage (more on this later). The figures on the middle and right below depict the training process, by graphing out two important metrics: training and validation accuracy. Training accuracy refers to "how well" a network can learn a given dataset, and "remember it" accurately when presented with it again. Validation accuracy refers to "how well" the same network can predict a feature of an unknown dataset, given its previous knowledge. As epochs advance, both the training and validation accuracies appear to improve (although not always ‒ also more on this later).
+</p>
+<br><br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part1/dataloader.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br> Input from Dataloader</figcaption>
+    </td>
+    <td>
+      <img src="images/part1/VGG16_lr1e-3_ep10.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>1×10<sup>-3</sup> Learning Rate, 10 Epochs</figcaption>
+    </td>
+    <td>
+      <img src="images/part1/VGG16_lr7e-7_ep100.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>7×10<sup>-7</sup> Learning Rate, 100 Epochs</figcaption>
+    </td>
+    </tr>
+  </table>
+</div>
+
+<br>
+<br>
+<p>
+When it comes to results, the neural network is quite succesful at predicting the nose keypoint for front-facing faces. However, it fails spectacularly if the face is rotated or bended, or if it contains features that appear similar to a nose, such as a triangular cheek. The figures below demonstrate these results.
+</p>
+<br><br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part1/1.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Successful Prediction, 1/2</figcaption>
+    </td>
+    <td>
+      <img src="images/part1/2.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Successful Prediction, 2/2</figcaption>
+    </td>
+    </tr>
+    <tr>
+    <td>
+      <img src="images/part1/3.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Profiles are much harder to analyze.</figcaption>
+    </td>
+    <td>
+      <img src="images/part1/4.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Other features, such as cheeks, can be misleading.</figcaption>
+    </td>
+    </tr>
+  </table>
+</div>
+
+<br><br><br><br><br><br><br><br>
+
+<a href="#Part 1"><h2 align="middle"><b>↑</b></h2></a>
+<h3 align="middle" id="Part 2">2. Full Facial Keypoints Detection</h3>
+<a href="#Part 3"><h2 align="middle"><b>↓</b></h2></a>
+
+<br>
+
+<p>
+Although a simple and unsophisticated neural network may display acceptable results at predicting a single keypoint, it will have a much harder time predicting multiple keypoints. Therefore, for this part, I expanded my model to a full VGG16, as outlined by <a href="https://arxiv.org/pdf/1409.1556.pdf">Symonian and Zisserman (2015)</a>. Its architecture can be broken down into 5+1 blocks, the first two of which consist of two convolutional layers followed by a MaxPool, and the three subsequent ones of three convolutional layers followed by a MaxPool. The final block is made of three fully connected layers. Every layer is also followed by a ReLU, to remove negative outputs. The following figure depicts the network implementation in PyTorch, and the parameters that were chosen. All convolutions use a 3×3 kernel with stride of 1 and padding of 1, in order for the layers belonging to the same block to have the same input and output dimensions.
+</p>
+
+<br><br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part2/architecture.png" class="thumbnail" align="middle" width="600px"/>
+    </td>
+    </tr>
+  </table>
+</div>
+<div align="middle">
+<br>
+<br>
+
+
+<p>
+An improved architecture will certainly make the model more robust, yet in itself is insufficient. A key, missing, ingredient is data. All data-driven methods, and especially neural networks, necessitate vast amounts of data to be effective. Unfortunately, the given dataset for this part is relatively small ‒ it consists of only 240 images. A "dirty trick" must therefore be employed, known as <i>data augmentation</i>. In short, it is possible to produce multiple different images from a single one, by applying to it transformations of all kinds. When these transformations are performed over a dataset, they will vastly expand it. For this project, I implemented various data augmentation techniques, including Rotation, Translation, Brightness and Contrast Adjustments, and Random Noise Insertion. The following figures depict a few samples taken from the new, augmented dataloader.
+</p>
+
+<br>
+<br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part2/dataloader_1.png" class="thumbnail" align="middle" width="120px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>No Augmentation</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/dataloader_2.png" class="thumbnail" align="middle" width="120px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Rototranslation</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/dataloader_3.png" class="thumbnail" align="middle" width="120px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Brighntess Boost</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/dataloader_4.png" class="thumbnail" align="middle" width="120px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Contrast Boost</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/dataloader_5.png" class="thumbnail" align="middle" width="120px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Contrast Boost + Noise</figcaption>
+    </td>
+    </tr>
+  </table>
+</div>
+<div align="middle">
+<br>
+<br>
+
+<p>
+Other than by tweaking the architecture and input data, the model can also be improved by setting appropriate <i>hyperparameters</i>. Hyperparameters are parameters that affect the training process, but are not modified by the network as it learns. For example, the learning rate, which affects "how fast" the network learns, is a hyperparameter. In contrast, the weights of each layer that get modified as the model learns and improves over time, are not hyperparameters. In this project, the available hyperparameters where three: the model learning rate, the number of epochs, and the batch size. The number of epochs indicates how many times the network should iterate over the training data to "learn it better", just like a human may learn a the pages of a book better if they read it repeatedly. The batch size is the number of data samples the network should attempt to learn "at once". For instance, a batch size of 4 signifies that the network will read and train on 4 different sets of images and keypoints, and then move to 4 new sets of images and keypoints, until all data is used for a given epoch.
+</p>
+<p>
+After much experimentation, I decided to set the batch size to a flat 8 for all training sessions. I noticed that larger batch sizes had a slightly better training loss and slightly worst validation loss, but the difference was negligible. The number 8 was chosen because it was the largest number that made it possible for my GPU to train on arbitrary amounts of data without ever running out of memory. The following figures demonstrate how training and validation accuracy vary with learning rate and number of epochs. As a general rule, the larger the learning rate, the smaller the number of epochs can be. A network with a high learning rate, but a small number of epochs will train quickly, at the cost of accuracy ‒ similarly to how a student that studies quickly but very little might miss on important details. That said, it is especially important that as the learning rate decreases, the number of epochs increases. A student that studies slowly but for very little time may become an expert in chapter 1, but will be agnostic of chapters 2, 3 and 4 of the textbook they are studying from. Mathematically, a low learning rate signifies that the gradient descent will be slower, and as such a comparatively small number of epochs may not guarantee finding a point where the loss is at minimum. Finally, a large learning rate with a large number of epochs should be avoided, as the loss will oscillate around a minimum, without ever trully reaching it. A student that studies in a rush will always miss on important details, even if they take their time to do so.
+</p>
+
+<br><br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part2/plots/VGG16_lr1e-3_ep10.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>1×10<sup>-3</sup> Learning Rate, 10 Epochs</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/plots/VGG16_lr1e-3_ep20.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>1×10<sup>-3</sup> Learning Rate, 20 Epochs</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/plots/VGG16_lr1e-3_ep50.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>1×10<sup>-3</sup> Learning Rate, 50 Epochs</figcaption>
+    </td>
+    </tr>
+    <tr>
+    <td>
+      <img src="images/part2/plots/VGG16_lr5e-4_ep10.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>5×10<sup>-4</sup> Learning Rate, 10 Epochs</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/plots/VGG16_lr5e-4_ep20.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>5×10<sup>-4</sup> Learning Rate, 20 Epochs</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/plots/VGG16_lr5e-4_ep50.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>5×10<sup>-4</sup> Learning Rate, 50 Epochs</figcaption>
+    </td>
+    </tr>
+    <tr>
+    <td>
+      <img src="images/part2/plots/VGG16_lr1e-4_ep10.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>1×10<sup>-4</sup> Learning Rate, 10 Epochs</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/plots/VGG16_lr1e-4_ep20.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>1×10<sup>-4</sup> Learning Rate, 20 Epochs</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/plots/VGG16_lr1e-4_ep50.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>1×10<sup>-4</sup> Learning Rate, 50 Epochs</figcaption>
+    </td>
+    </tr>
+    <tr>
+    <td>
+      <img src="images/part2/plots/VGG16_lr5e-5_ep10.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>5×10<sup>-5</sup> Learning Rate, 10 Epochs</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/plots/VGG16_lr5e-5_ep20.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>5×10<sup>-5</sup> Learning Rate, 20 Epochs</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/plots/VGG16_lr5e-5_ep50.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>5×10<sup>-5</sup> Learning Rate, 50 Epochs</figcaption>
+    </td>
+    </tr>
+  </table>
+</div>
+<div align="middle">
+<br><br>
+
+<p>
+With the above in mind, I picked the model trained at a learning rate 5×10<sup>-5</sup> for 50 epochs to make the keypoint predictions for this part. The model seems to perform really well, even on faces with different poses. That said, it still makes mistakes when it encounters a face that is really different from the data it was trained upon, or when the person assumes a unique facial expression. Furthermore, features that do not necessarily belong to a face image, such as hands, can further mislead the model.
+</p>
+<br><br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part2/1.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Successful Prediction, 1/2</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/2.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Successful Prediction, 2/2</figcaption>
+    </td>
+    </tr>
+    <tr>
+    <td>
+      <img src="images/part2/3.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Many faces often requires more data to be understood.</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/4.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Unique facial expressions are hard to account for.</figcaption>
+    </td>
+    </tr>
+  </table>
+</div>
+<br><br>
+
+<p>
+On a separate note, a really fascinating aspect of neural networks is how much they seem to resemble certain human cognitive processes, despite not being explicitly programmed as such. The following figures illustrate the learned filters of each convolutional layer in the VGG16 network, used to predict facial keypoints. Most of them appear to have a unique geometric pattern accounting for orientation or shape, and resemble the filters displayed by cortical cells in the mammal brain.
+</p>
+<br><br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part2/filters/VGG16_1_0.jpg" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Block 1, Layer 1</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/filters/VGG16_1_3.jpg" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Block 1, Layer 2</figcaption>
+    </td>
+    </tr>
+    <tr>
+    <td>
+      <img src="images/part2/filters/VGG16_2_7.jpg" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Block 2, Layer 1</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/filters/VGG16_2_10.jpg" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Block 2, Layer 2</figcaption>
+    </td>
+    </tr>
+  </table>
+</div>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part2/filters/VGG16_3_14.jpg" class="thumbnail" align="middle" width="195px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Block 3, Layer 1</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/filters/VGG16_3_17.jpg" class="thumbnail" align="middle" width="195px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Block 3, Layer 2</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/filters/VGG16_3_20.jpg" class="thumbnail" align="middle" width="195px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Block 3, Layer 3</figcaption>
+    </td>
+    </tr>
+    <tr>
+    <td>
+      <img src="images/part2/filters/VGG16_4_24.jpg" class="thumbnail" align="middle" width="195px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Block 4, Layer 1</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/filters/VGG16_4_27.jpg" class="thumbnail" align="middle" width="195px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Block 4, Layer 2</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/filters/VGG16_4_30.jpg" class="thumbnail" align="middle" width="195px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Block 4, Layer 3</figcaption>
+    </td>
+    </tr>
+    <tr>
+    <td>
+      <img src="images/part2/filters/VGG16_5_34.jpg" class="thumbnail" align="middle" width="195px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Block 5, Layer 1</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/filters/VGG16_5_37.jpg" class="thumbnail" align="middle" width="195px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Block 5, Layer 2</figcaption>
+    </td>
+    <td>
+      <img src="images/part2/filters/VGG16_5_40.jpg" class="thumbnail" align="middle" width="195px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>Block 5, Layer 3</figcaption>
+    </td>
+    </tr>
+  </table>
+</div>
+<br>
+<br>
+<br><br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part2/filters/zoomin.png" class="thumbnail" align="middle" width="800px"/>
+    </td>
+    </tr>
+  </table>
+</div>
+
+<br><br><br><br><br><br><br><br>
+
+
+<a href="#Part 2"><h2 align="middle"><b>↑</b></h2></a>
+<h3 align="middle" id="Part 3">3. Training with a Larger Dataset</h3>
+<a href="#Part 4"><h2 align="middle"><b>↓</b></h2></a>
+<br>
+
+<p>
+For this part, I decided to retain the VGG16 model, because I find its architecture elegant and beautiful (as compared to the ResNet18 architecture), and because I wanted to challenge myself to find further, little known, ways to optimize it. In fact, I found two such ways: <i>Batch Normalization</i> and <i>Dilution</i>. The original VGG16 architecture ignores them because they were still in development during the time the paper was written, but have since then shown to improve both training and validation accuracy. Batch Normalization consists of a method to mitigate <i>Internal Covariate Shift</i>. Internal Covariate Shift is the phenomenon where as training advances each layer receives new distributions of inputs, and has to adjust to them. In deep networks this can easily propagate to the final layers, introducing error. Batch Normalization simply normalizes all input distributions to make them similar, removing thus such error propagation. On the other hand, Dilution, also known as <i>Dropout</i>, consists of randomly setting a certain weight to zero for a given input, removing thus its contribution, to protect against overfitting the data. The following figure depicts the architecture as implemented in PyTorch. Every convolutional layer is now followed by a batch normalization layer, and every fully connected layer by a dropout layer. The dropout rate (the chance to make a certain weight zero) was set to 0.5, according to what is <a href="https://jmlr.org/papers/volume15/srivastava14a/srivastava14a.pdf">suggested by literature</a>.
+</p>
+
+<br><br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part3/architecture.png" class="thumbnail" align="middle" width="600px"/>
+    </td>
+    </tr>
+  </table>
+</div>
+<div align="middle">
+<br>
+<br>
+
+<p>
+Due to the size of the training data (6666 original images, plus 19998 augmented images), the original training was done only over 10 epochs, with a learning rate of 5×10<sup>-5</sup>, and hyperparameters were subsequently adjusted using the validation set as a second training set. The following figures demonstrate the results. Originally, different learning rates were tested at 10 epochs, with 7×10<sup>-7</sup> being the most promising to train with for larger epoch numbers. The final training took place with a learning rate of 7×10<sup>-7</sup> at 25 epochs, because it provided an acceptable trade-off between training time and model accuracy. As it can be seen in the figures below, at this learning rate, upon hitting 20-25 epochs, the loss function converges at a mean square error of about 77, in an oscillatory fashion. That said, my model ultimately scored a 10.69686 mean square error on the class Kaggle competition.
+</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part3/VGG16_lr5e-05_ep10.png" class="thumbnail" align="middle" width="450px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>5×10<sup>-5</sup> Learning Rate, 10 Epochs</figcaption>
+    </td>
+    </tr>
+  </table>
+</div>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part3/plots/VGG16_lr2.5e-4_ep10.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>1×10<sup>-3</sup> Learning Rate, 10 Epochs</figcaption>
+    </td>
+    <td>
+      <img src="images/part3/plots/VGG16_lr2.5e-4_ep10.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>2.5×10<sup>-4</sup> Learning Rate, 10 Epochs</figcaption>
+    </td>
+    <td>
+      <img src="images/part3/plots/VGG16_lr6e-6_ep10.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>6×10<sup>-6</sup> Learning Rate, 10 Epochs</figcaption>
+    </td>
+    </tr>
+    <tr>
+    <td>
+      <img src="images/part3/plots/VGG16_lr7e-7_ep10.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>7×10<sup>-7</sup> Learning Rate, 10 Epochs</figcaption>
+    </td>
+    <td>
+      <img src="images/part3/plots/VGG16_lr7e-7_ep20.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>7×10<sup>-7</sup> Learning Rate, 20 Epochs</figcaption>
+    </td>
+    <td>
+      <img src="images/part3/plots/VGG16_lr7e-7_ep25.png" class="thumbnail" align="middle" width="300px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br>7×10<sup>-7</sup> Learning Rate, 25 Epochs</figcaption>
+    </td>
+    </tr>
+  </table>
+</div>
+<br><br>
+
+<p>
+Overall, the trained network does a fantastic job at predicting facial keypoints. The following figures illustrate some of the results.
+</p>
+
+<br><br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part3/0.png" class="thumbnail" align="middle" width="300px"/>
+    </td>
+    <td>
+      <img src="images/part3/1.png" class="thumbnail" align="middle" width="300px"/>
+    </td>
+    <td>
+      <img src="images/part3/2.png" class="thumbnail" align="middle" width="300px"/>
+    </td>
+    </tr>
+    <tr>
+    <td>
+      <img src="images/part3/3.png" class="thumbnail" align="middle" width="300px"/>
+    </td>
+    <td>
+      <img src="images/part3/4.png" class="thumbnail" align="middle" width="300px"/>
+    </td>
+    <td>
+      <img src="images/part3/5.png" class="thumbnail" align="middle" width="300px"/>
+    </td>
+    </tr>
+  </table>
+</div>
+<br><br><br>
+<p>
+That said, not all pictures are perfectly detected. Faces in peculiar poses, or with peculiar expressions still pause a problem to the network. In particular, the network makes innacurate prediction when the person is laying down, or has their eyes closed and/or mouth open. Moreover, because it was trained with a dataset where the faces occupied the vast majority of the image, new input images must be accompanied with a cropping box that specifies where the face is at. As such, the network does not perfectly detect facial keypoints: it first needs someone to "tell it" where the actual face is!
+</p>
+
+<br><br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part3/custom/akshat.png" class="thumbnail" align="middle" width="200px"/>
+    </td>
+    <td>
+      <img src="images/part3/custom/david.png" class="thumbnail" align="middle" width="200px"/>
+    </td>
+    <td>
+      <img src="images/part3/custom/orpheas.png" class="thumbnail" align="middle" width="200px"/>
+    </td>
+    </tr>
+    <tr>
+    <td>
+      <img src="images/part3/custom/revekka.png" class="thumbnail" align="middle" width="200px"/>
+    </td>
+    <td>
+      <img src="images/part3/custom/apollo.png" class="thumbnail" align="middle" width="200px"/>
+    </td>
+    <td>
+      <img src="images/part3/custom/peru.png" class="thumbnail" align="middle" width="200px"/>
+    </td>
+    </tr>
+  </table>
+</div>
+
+
+
+<br><br><br><br><br><br><br><br>
+
+
+
+<a href="#Part 3"><h2 align="middle"><b>↑</b></h2></a>
+<h3 align="middle" id="Part 4">4. Antialiased MaxPool</h3>
+<a href="#Part 5"><h2 align="middle"><b>↓</b></h2></a>
+<br>
+
+<p>
+Despite being rather satisfied with the aforementioned results, I felt the need to make one final optimization to my VGG16 model, by implementing the Antialised MaxPool, as outlined by <a href="https://richzhang.github.io/antialiased-cnns">Zhang (2019)</a>. The Antialised MaxPool is meant to replace the regular MaxPool that follows each convolutional block. The regular 2×2 MaxPool of stride 2 is used in VGG16 to half the height and width of the data passed from each block to its next, such that the subsequent 3×3 convolutional filters capture a more macroscopic view of the data, without vastly increasing the time needed to train. Though, since the MaxPool is in essence a downsampling operation, it introduces aliasing artifacts. The antialiased MaxPool is meant to address this, by slightly blurring the data before it outputs it for the next block.
+</p>
+<p>
+In code, I first implemented the BlurPool operation, by extending the PyTorch Conv2d class. Although it may at first sound exotic, the BlurPool is nothing more than a usual convolution operation with a Gaussian filter. To get the Gaussian kernel I used an OpenCV helper, which I then expanded with a null dimension to fit PyTorch data types. By default, I set the standard deviation of the Gaussian kernel (which determines "how much" the image will be blurred) to 0.85, and its size to 3×3, to match the Triangle-3 (bilinear downsampling) filter proposed by Zhang in their study.
+</p>
+<p>
+Once the BlurPool is present, the Antialiased MaxPool is straightforward to implement. Practically, the Antialiased MaxPool is made of a regular MaxPool of stride 1, followed by a BlurPool such as the decrease in stride is accounted for by the reduction in height and width resulting from the convolution. For VGG16, this signifies using a 2×2 MaxPool of stride 1, and a BlurPool of stride 2 and padding 1. The new VGG16 architecture I used is shown in the figure below. It is similar to the previous part, except for the lower stride of the MaxPool, and the additional BlurPool layers (circled in red).
+</p>
+
+<br><br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part4/architecture_blurpool.png" class="thumbnail" align="middle" width="600px"/>
+    </td>
+    </tr>
+  </table>
+</div>
+<div align="middle">
+<br>
+<br>
+
+<p>
+In practice, the antialiased VGG16 network was a bit more robust than the regular VGG16, despite having very similar training and validation losses. In the images tested, it is marginally better at predicting facial keypoints, especially if the person is in a peculiar pose or is rolling with a peculiar expression. Therefore, despite the fact it is primarily aimed at addressing scaling artifacts and perturbations in translation, antialiasing the MaxPools of a model can make it more robust to various input perturbations, including rotations and noise.
+</p>
+
+<br><br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part4/custom/akshat.png" class="thumbnail" align="middle" width="200px"/>
+    </td>
+    <td>
+      <img src="images/part4/custom/david.png" class="thumbnail" align="middle" width="200px"/>
+    </td>
+    <td>
+      <img src="images/part4/custom/orpheas.png" class="thumbnail" align="middle" width="200px"/>
+    </td>
+    </tr>
+    <tr>
+    <td>
+      <img src="images/part4/custom/revekka.png" class="thumbnail" align="middle" width="200px"/>
+    </td>
+    <td>
+      <img src="images/part4/custom/apollo.png" class="thumbnail" align="middle" width="200px"/>
+    </td>
+    <td>
+      <img src="images/part4/custom/peru.png" class="thumbnail" align="middle" width="200px"/>
+    </td>
+    </tr>
+  </table>
+</div>
+
+
+
+<br><br><br><br>
+<br><br><br><br>
+<a href="#Part 4"><h2 align="middle"><b>↑</b></h2></a>
+<h3 align="middle" id="Part 5">5. AutoMorphing</h3>
+<a href="#Part 6"><h2 align="middle"><b>↓</b></h2></a>
+<br>
+
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part5/einstein.png" class="thumbnail" align="middle" width="200px"/>
+    </td>
+    <td>
+      <img src="images/part5/nietzsche.png" class="thumbnail" align="middle" width="200px"/>
+    </td>
+    <td>
+      <img src="images/part5/dali.png" class="thumbnail" align="middle" width="200px"/>
+    </td>
+    </tr>
+    <tr>
+  </table>
+</div>
+<br>
+<h2 align="middle">Einstein, Nietzsche, Dali</h2>
+<br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part5/edn.gif" class="thumbnail" align="middle" width="450px"/>
+    </td>
+    </tr>
+  </table>
+</div>
+<br>
+<br>
+
+<hr>
+<p>Once the networks from the previous parts had finished training, and it was about time that I merge-in my code from the Image Morphing project, a moment of brilliance occured to me. I thought to myself: why use a neural network to see what <i>is</i> already out there, rather than what <i>is not</i>? Less than a century ago, color photography made representative art obsolete, and pushed for new ways of expression. Now, intelligent machines push the limits further, into a re-discovery of our environment and ourselves. Forms lose their meaning for sensations to take over, as the machine generates free from style, subject only to pure intuition. We are experiencing the emergence of a New Art: an Art from and within assemblages. An Art practiced through the visionary selection of procedures. An Art as imagination.
+<hr>
+<br>
+<br>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part5/out_200.0.gif" class="thumbnail" align="middle" width="38px"/>
+    </td>
+    </tr>
+  </table>
+</div>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part5/out_180.0.gif" class="thumbnail" align="middle" width="75px"/>
+    </td>
+    </tr>
+  </table>
+</div>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part5/out_150.0.gif" class="thumbnail" align="middle" width="150px"/>
+    </td>
+    </tr>
+  </table>
+</div>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part5/out_120.0.gif" class="thumbnail" align="middle" width="300px"/>
+    </td>
+    </tr>
+  </table>
+</div>
+<div align="middle" id="Part 6">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/part5/out_90.gif" class="thumbnail" align="middle" width="600px"/>
+    </td>
+    </tr>
+  </table>
+</div>
+
+
+<a href="#Part 0"><h2 align="middle"><b>⇈</b></h2></a>
+<br>
+<h4 align="middle"> φaces of Νature</h4>
+<br>
+<br>
+<hr>
+<p><sup>⸸</sup>♡☮</p>
+<hr>
+<h3 align="middle">CS 194-26: Computer Vision and Computational Photography (Fall 2020)</h3>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/Signature.png" class="thumbnail" align="middle" width="150px"/>
+    </td>
+    </tr>
+  </table>
+</div>
+
+</body>
+</html>
