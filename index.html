@@ -232,6 +232,8 @@ This is because the distribution of keypoints may be such that many points withi
     </tr>
   </table>
 </div>
+
+
 <br><br><br><br>
 <br><br><br><br>
 
@@ -324,7 +326,96 @@ For the threshold against which to evaluate 1-NN/2-NN (aka. Lowe's ratio), I cho
 <a href="#Part 5"><h2 align="middle"><b>↓</b></h2></a>
 <br>
 <p>
+For this assignment, I took pictures of the Acropolis, and also utilized pictures I had from a wood close to Lake Tahoe in Sierra Nevada, and a coastal part of Lake Balaton in Hungary. To stitch images together, I used a two-level Laplacian stack, followed by a simple weighted alpha blending for the parts of the images that overlap. For the most part, this was able to remove the seems joining the images, and blend their colors together, but not always. I noticed that pictures with highly varying exposure were very hard to blend, and almost all techniques failed on them. Other things I tried where white balancing using the grey world assumption, and histogram equalization. The following figures illustrate some of the results.
 </p>
+
+<br>
+<br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/collection/0.jpg" class="thumbnail" align="middle" width="150px"/>
+      <br>
+    </td>
+    <td>
+      <img src="images/collection/1.jpg" class="thumbnail" align="middle" width="150px"/>
+      <br>
+    </td>
+    <td>
+      <img src="images/collection/2.jpg" class="thumbnail" align="middle" width="150px"/>
+      <br>
+    </td>
+    <td>
+      <img src="images/collection/3.jpg" class="thumbnail" align="middle" width="150px"/>
+      <br>
+    </td>
+    <td>
+      <img src="images/collection/4.jpg" class="thumbnail" align="middle" width="150px"/>
+      <br>
+    </td>
+    </tr>
+    <tr>
+    <td>
+      <img src="images/collection/5.jpg" class="thumbnail" align="middle" width="150px"/>
+      <br>
+    </td>
+    <td>
+      <img src="images/collection/6.jpg" class="thumbnail" align="middle" width="150px"/>
+      <br>
+    </td>
+    <td>
+      <img src="images/collection/7.jpg" class="thumbnail" align="middle" width="150px"/>
+      <br>
+    </td>
+    <td>
+      <img src="images/collection/8.jpg" class="thumbnail" align="middle" width="150px"/>
+      <br>
+    </td>
+    <td>
+      <img src="images/collection/9.jpg" class="thumbnail" align="middle" width="150px"/>
+      <br>
+    </td>
+    </tr>
+    <tr>
+    <td>
+      <img src="images/collection/10.png" class="thumbnail" align="middle" width="150px"/>
+      <br>
+    </td>
+    <td>
+      <img src="images/collection/11.png" class="thumbnail" align="middle" width="150px"/>
+      <br>
+    </td>
+    <td>
+      <img src="images/collection/12.png" class="thumbnail" align="middle" width="150px"/>
+      <br>
+    </td>
+    <td>
+      <img src="images/collection/13.png" class="thumbnail" align="middle" width="150px"/>
+      <br>
+    </td>
+    <td>
+      <img src="images/collection/14.png" class="thumbnail" align="middle" width="150px"/>
+      <br>
+    </td>
+    </tr>
+  </table>
+</div>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/collection/15.jpg" class="thumbnail" align="middle" width="150px"/>
+      <br>
+    </td>
+    <td>
+      <img src="images/collection/16.jpg" class="thumbnail" align="middle" width="150px"/>
+      <br>
+    </td>
+    </tr>
+  </table>
+</div>
+<h3 align="middle"> ↥ Photos Taken </h3>
 
 
 <br><br><br><br>
@@ -342,7 +433,6 @@ This all sounded good on paper, until I was faced with an important problem: I d
 </p>
 <!--# TODO-->
 <!--; notice how the "ghosting" effect around the Acropolis has disappeared-->
-
 <br><br><br><br>
 <br><br><br><br>
 
