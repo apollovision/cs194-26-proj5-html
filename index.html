@@ -111,7 +111,6 @@
 <a href="#Part 3"><h6 align="middle">3. Extracting and Matching Feature Descriptors</h6></a>
 <a href="#Part 4"><h6 align="middle">4. Image Mosaics</h6></a>
 <a href="#Part 5"><h6 align="middle">5. Cylindrical Mapping and 360° Panorama</h6></a>
-<a href="#Part 6"><h6 align="middle">6. Panorama Recognition</h6></a>
 <br><br><br><br><br><br><br><br>
 
 <a href="#Part 0"><h2 align="middle"><b>↑</b></h2></a>
@@ -162,19 +161,19 @@ I find it somewhat funny that the first recursive function I wrote after a while
 was one that implemented Adaptive Non-Maximal Supression (ANMS). But when I think about it,
 this only makes sense:
 after a nice semester of relying on NumPy, I developped somewhat of an <i>aversion</i>
-to <i>for</i> loops. That said, ANMS was also the slowest function I wrote since a while.
+to all sorts of loops. That said, ANMS was also the slowest function I wrote since a while.
 Having to search through all local maxima, without a NumPy magic trick to save the day,
-one thing is for sure, the process is going to be slow. As such, I somewhat
+one thing was for sure, the process was going to be slow. As such, I somewhat
 deviated from <a href="https://inst.eecs.berkeley.edu/~cs194-26/fa20/hw/proj5/Papers/MOPS.pdf">Brown et al. (2005)</a>, by introducing an additional parameter to the ANMS, namely "greediness". The higher
 the greediness, the fewer points are checked for neighbors within radius length. Practically this
-worked well for testing, but for the final results, I decided to not cut corners.
+worked well for testing, but for the final results, I decided to perform full search (the generated panoramas looked a bit better with it).
 </p>
 <p>
 Otherwise,
 I set the <i>c_robust</i> parameter to 0.9, as Brown et al. suggest, and begin searching from
 a radius of 0. The following figures demonstrate the results of the Harris Corner detector,
 and how the points can be "better spread" by using ANMS. Notice that when <i>c_robust</i> is very small, as in the last figure, the procedure may not always lead to the desired number of points.
-This is because the distribution of keypoints may be such that many points within a really large radius (that practically spans the totality of the image), are above a certain intensity, and therefore never fail the <i>c_robust</i> test. The goal for the last figure was to reach 112 points, but with a <i>c_robust</i> of 0.3, the process halted at 204 points. This means that 204 points had all intensities above 0.3 times the intensity of the maximum, and therefore could not be eliminated. On the other hand, setting <i>c_robust</i> above 1 is also problematic, given that it can potentially eliminate points with greater intensities (and therefore more likely to be features) than others within a given radius. Notice this difference in the figures below where <i>c_robust</i> is set to 1.5.
+This is because the distribution of keypoints may be such that many points within a really large radius (that practically spans the totality of the image), are above a certain intensity, and therefore never fail the <i>c_robust</i> test. The goal for the last figure was to reach 112 points, but with a <i>c_robust</i> of 0.3, the process halted at 204 points. This means that 204 points had all intensities above 0.3 times the intensity of the maximum, and therefore could not be eliminated. On the other hand, setting <i>c_robust</i> above 1 also leads to problems, but of a different type. In such a case, points with greater intensities (and therefore more likely to be features) have a chance to be eliminated before points with lesser intensities (and therefore likelihood to be features), within a given radius. In practice though, I observed that setting <i>c_robust</i> really high, for instance at 1.5, did not make that much of a difference, because the algorithm begins by considering the maxima anyway. I hence expect this problem to become more apparent only if a large number of maxima are clustered in a small region.
 </p>
 <br>
 <br>
@@ -295,7 +294,7 @@ Talk as much as you want about Aristotle and Plato, but for this project I owe m
 </div>
 <p>
 <br>
-I can't remember how many times I used the SSD for this part. <br> For the threshold against which to evaluate 1-NN/2-NN (aka. Lowe's ratio), I chose 0.4, as this seemed to be the inflection point after which comparatively more outliers will be selected than inliers.
+For the threshold against which to evaluate 1-NN/2-NN (aka. Lowe's ratio), I chose 0.4, as this seemed to be the inflection point after which comparatively more outliers will be selected than inliers.
 </p>
 <br>
 <br>
@@ -328,8 +327,30 @@ I can't remember how many times I used the SSD for this part. <br> For the thres
 </p>
 
 
+<br><br><br><br>
+<br><br><br><br>
+
+<a href="#Part 4"><h2 align="middle"><b>↑</b></h2></a>
+<h3 align="middle" id="Part 5">5. Cylindrical Mapping and 360° Panorama</h3>
+<a href="#Part 6"><h2 align="middle"><b>↓</b></h2></a>
+<br>
 <p>
-I really liked this project, because it required both geometric thinking (how to stitch the images together) as well a strong perceptual and aesthetic intuition (how to make the stitched images look good together). I learned the hard way that, unless the images have very similar exposure, even advanced blending techniques will fail at making them appear uniform. That said, the versatility and effectiveness of the homography impressed me. I can now easily see how a homography would be used in other problems of computer vision, such 3D reconstruction. Finally, the most important thing I learned (but did not implement yet), regards transformations in non-Euclidian space. For Part B, I plan on making a 360° panorama, by mapping the homography in spherical space.
+As I wanted my panorama to look a bit better, I began looking into Bells & Whistles. By reading further, I realized that most pictures we take have imperfections to them, even if we tend to think of them as rectilinear projections. From the looks of it, my pictures suffered from pincushion distortion, at different levels of severity. This was primarily evident in images where the Acropolis was away from the center. To that extend, I looked into cylindrical mapping. After quite a lot of experimentation with different types of grids and mapping functions, I realized that I simply had to project each individual image to a sphere, and then reproject it back to a plane rectilinearly.
+</p>
+<p>
+This all sounded good on paper, until I was faced with an important problem: I didn't know the focal length that I used to take my pictures. Unfortunately for me, the EXIF data I was able to extract contained only the FocalLength (17/4), not the plane resolutions. As such, I used trial and error to approximate the camera intrinsic matrix. And, long story short, after a few trials, it worked! The following figures demonstrate the results:
+</p>
+<!--# TODO-->
+<!--; notice how the "ghosting" effect around the Acropolis has disappeared-->
+
+<br><br><br><br>
+<br><br><br><br>
+
+
+<p>
+Overall, I really liked this project, because it made me read up on projective geometry, solidify my understanding of the RANSAC, and
+appreciate the versatility of the homography. Most importantly, I now understand some of the research I do in Extended Reality and Robotics a little better. Also, I can't express how much I liked the fact that this project was about synthesizing what we had already learned in projects 1-3. There is something amazing about reading a paper, implementing it from scratch, and then reflecting back to how it "fits in" the broader picture. <br><br>
+Thank you for your effort running this class, it has been by far the most fun CS course I took at Berkeley!
 </p>
 <br><br>
 <br><br>
@@ -342,7 +363,7 @@ I really liked this project, because it required both geometric thinking (how to
     alongside cylindrically-mapped images to my stitching algorithm.<br>
     <br>What followed had no precedent.</h6>
 <br>
-<h2 align="middle"> Randomness </h2>
+<h2 align="middle" id="Part 6"> Chaos </h2>
 <br>
 <br>
 <div align="middle">
