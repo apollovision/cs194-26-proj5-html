@@ -104,6 +104,8 @@
 
 
 
+<br>
+<br>
 <h2 align="middle">Table of Contents</h2>
 <h2 align="middle">—</h2>
 <a href="#Part 1"><h6 align="middle">1. Perspective Warp</h6></a>
@@ -111,6 +113,7 @@
 <a href="#Part 3"><h6 align="middle">3. Extracting and Matching Feature Descriptors</h6></a>
 <a href="#Part 4"><h6 align="middle">4. Image Mosaics</h6></a>
 <a href="#Part 5"><h6 align="middle">5. Cylindrical Mapping and 360° Panorama</h6></a>
+<a href="#Part 6"><h6 align="middle">6. Thank you!</h6></a>
 <br><br><br><br><br><br><br><br>
 
 <a href="#Part 0"><h2 align="middle"><b>↑</b></h2></a>
@@ -415,6 +418,7 @@ For this assignment, I took pictures of the Acropolis, and also utilized picture
     </tr>
   </table>
 </div>
+<br>
 <h3 align="middle"> ↥ Photos Taken </h3>
 <br>
 <br>
@@ -424,12 +428,12 @@ For this assignment, I took pictures of the Acropolis, and also utilized picture
     <td>
       <img src="images/manual/acropolis_manual.png" class="thumbnail" align="middle" width="450px"/>
       <br>
-      <figcaption align="middle"> <br><br>Acropolis Panorama, Manual</figcaption>
+      <figcaption align="middle"> <br>—<br>Acropolis Panorama, Manual</figcaption>
     </td>
     <td>
       <img src="images/manual/acropolis.png" class="thumbnail" align="middle" width="450px"/>
       <br>
-      <figcaption align="middle"> <br><br>Acropolis Panorama, Automatic</figcaption>
+      <figcaption align="middle"> <br>—<br>Acropolis Panorama, Automatic</figcaption>
     </td>
     </tr>
   </table>
@@ -440,12 +444,12 @@ For this assignment, I took pictures of the Acropolis, and also utilized picture
     <td>
       <img src="images/manual/taho_manual.png" class="thumbnail" align="middle" width="450px"/>
       <br>
-      <figcaption align="middle"> <br><br>Tahoe Panorama, Manual</figcaption>
+      <figcaption align="middle"> <br>—<br>Tahoe Panorama, Manual</figcaption>
     </td>
     <td>
       <img src="images/manual/taho.png" class="thumbnail" align="middle" width="450px"/>
       <br>
-      <figcaption align="middle"> <br><br>Tahoe Panorama, Automatic</figcaption>
+      <figcaption align="middle"> <br>—<br>Tahoe Panorama, Automatic</figcaption>
     </td>
     </tr>
   </table>
@@ -456,17 +460,51 @@ For this assignment, I took pictures of the Acropolis, and also utilized picture
     <td>
       <img src="images/manual/balaton_manual.png" class="thumbnail" align="middle" width="450px"/>
       <br>
-      <figcaption align="middle"> <br><br>Balaton Panorama, Manual</figcaption>
+      <figcaption align="middle"> <br>—<br>Balaton Panorama, Manual</figcaption>
     </td>
     <td>
       <img src="images/manual/balaton.png" class="thumbnail" align="middle" width="450px"/>
       <br>
-      <figcaption align="middle"> <br><br>Balaton Panorama, Automatic</figcaption>
+      <figcaption align="middle"> <br>—<br>Balaton Panorama, Automatic</figcaption>
     </td>
     </tr>
   </table>
 </div>
 <h3 align="middle"> Notice how automatic stitching is slightly better, and can stitch more images. </h3>
+<br>
+<br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/two_band/lo.png" class="thumbnail" align="middle" width="450px"/>
+      <br>
+      <figcaption align="middle"> <br>—<br>Acropolis Panorama, Low Frequencies</figcaption>
+    </td>
+    <td>
+      <img src="images/two_band/hi.png" class="thumbnail" align="middle" width="450px"/>
+      <br>
+      <figcaption align="middle"> <br>—<br>Acropolis Panorama, High Frequencies</figcaption>
+    </td>
+    </tr>
+  </table>
+</div>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/two_band/acropolis_two_band.png" class="thumbnail" align="middle" width="450px"/>
+      <br>
+      <figcaption align="middle"> <br>—<br>Acropolis Panorama, Two-Band Blend</figcaption>
+    </td>
+    <td>
+      <img src="images/two_band/tahoe_two_band.png" class="thumbnail" align="middle" width="450px"/>
+      <br>
+      <figcaption align="middle"> <br>—<br>Tahoe Panorama, Two-Band-Blend</figcaption>
+    </td>
+    </tr>
+  </table>
+</div>
 
 
 
@@ -481,18 +519,61 @@ For this assignment, I took pictures of the Acropolis, and also utilized picture
 As I wanted my panorama to look a bit better, I began looking into Bells & Whistles. By reading further, I realized that most pictures we take have imperfections to them, even if we tend to think of them as rectilinear projections. From the looks of it, my pictures suffered from pincushion distortion, at different levels of severity. This was primarily evident in images where the Acropolis was away from the center. To that extend, I looked into cylindrical mapping. After quite a lot of experimentation with different types of grids and mapping functions, I realized that I simply had to project each individual image to a sphere, and then reproject it back to a plane rectilinearly.
 </p>
 <p>
-This all sounded good on paper, until I was faced with an important problem: I didn't know the focal length that I used to take my pictures. Unfortunately for me, the EXIF data I was able to extract contained only the FocalLength (17/4), not the plane resolutions. As such, I used trial and error to approximate the camera intrinsic matrix. And, long story short, after a few trials, it worked! The following figures demonstrate the results:
+This all sounded good on paper, until I was faced with an important problem: I didn't know the focal length that I used to take my pictures. Unfortunately for me, the EXIF data I was able to extract contained only the FocalLength (17/4), not the plane resolutions. As such, I used trial and error to approximate the camera intrinsic matrix. Long story short, after a few trials, it worked, and I was very excited! Notice how the cylindrical mapping addresses the "ghosting" effect around the Acropolis, and makes the terrain take on a much more natural form:
 </p>
-<!--# TODO-->
-<!--; notice how the "ghosting" effect around the Acropolis has disappeared-->
+<br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/cylindrical1/cyl_vanilla.png" class="thumbnail" align="middle" width="700px"/>
+      <br>
+      <figcaption align="middle"> <br>—<br>Acropolis, Cylindrical Mapping</figcaption>
+    </td>
+    </tr>
+    <tr>
+    <td>
+      <img src="images/cylindrical1/cyl_two_band.png" class="thumbnail" align="middle" width="700px"/>
+      <br>
+      <figcaption align="middle"> <br>—<br>Acropolis, Cylindrical Mapping + Two-Band-Blend</figcaption>
+    </td>
+    </tr>
+  </table>
+</div>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/cylindrical2/acropolis_f_very_low.png" class="thumbnail" align="middle" width="220px"/>
+      <br>
+      <figcaption align="middle"> <br>—<br>Acropolis, Very Low Focal Length</figcaption>
+    </td>
+    <td>
+      <img src="images/cylindrical2/acropolis_f_low.png" class="thumbnail" align="middle" width="220px"/>
+      <br>
+      <figcaption align="middle"> <br>—<br>Acropolis, Low Focal Length</figcaption>
+    </td>
+    <td>
+      <img src="images/cylindrical2/acropolis_f_med.png" class="thumbnail" align="middle" width="220px"/>
+      <br>
+      <figcaption align="middle"> <br>—<br>Acropolis, Medium Focal Length</figcaption>
+    </td>
+    </tr>
+  </table>
+</div>
 <br><br><br><br>
 <br><br><br><br>
 
 
+<a href="#Part 5"><h2 align="middle"><b>↑</b></h2></a>
+<h3 align="middle" id="Part 6">6. Thank you!</h3>
+<a href="#Part 7"><h2 align="middle"><b>↓</b></h2></a>
+
+<br>
 <p>
 Overall, I really liked this project, because it made me read up on projective geometry, solidify my understanding of the RANSAC, and
 appreciate the versatility of the homography. Most importantly, I now understand some of the research I do in Extended Reality and Robotics a little better. Also, I can't express how much I liked the fact that this project was about synthesizing what we had already learned in projects 1-3. There is something amazing about reading a paper, implementing it from scratch, and then reflecting back to how it "fits in" the broader picture. <br><br>
-Thank you for your effort running this class, it has been by far the most fun CS course I took at Berkeley!
+Thank you for your effort running this class, the projects have been amazing!
 </p>
 <br><br>
 <br><br>
@@ -505,7 +586,7 @@ Thank you for your effort running this class, it has been by far the most fun CS
     alongside cylindrically-mapped images to my stitching algorithm.<br>
     <br>What followed had no precedent.</h6>
 <br>
-<h2 align="middle" id="Part 6"> Chaos </h2>
+<h2 align="middle" id="Part 7"> Chaos </h2>
 <br>
 <br>
 <div align="middle">
