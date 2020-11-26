@@ -118,7 +118,7 @@
 <h3 align="middle" id="Part 1">1. Perspective Warp</h3>
 <a href="#Part 2"><h2 align="middle"><b>↓</b></h2></a>
 <br>
-<br>
+
 <p>
 The homography is a very versatile operation. Thanks to it, I saw what Picasso saw, and
 saw Aristotle seemingly say something important to Plato.
@@ -142,22 +142,20 @@ saw Aristotle seemingly say something important to Plato.
     <tr>
     <td>
       <img src="images/rect1.png" class="thumbnail" align="middle" width="300px"/>
-      <br>
-      <figcaption align="middle"><br> </figcaption>
     </td>
     <td>
       <img src="images/rect2.png" class="thumbnail" align="middle" width="300px"/>
-      <br>
-      <figcaption align="middle"> <br> </figcaption>
     </td>
     </tr>
   </table>
 </div>
 <br><br><br><br>
+<br><br><br><br>
 
 <a href="#Part 1"><h2 align="middle"><b>↑</b></h2></a>
 <h3 align="middle" id="Part 2">2. Harris Corner Detector and ANMS</h3>
 <a href="#Part 3"><h2 align="middle"><b>↓</b></h2></a>
+<br>
 
 <p>
 I find it somewhat funny that the first recursive function I wrote after a while
@@ -178,7 +176,8 @@ a radius of 0. The following figures demonstrate the results of the Harris Corne
 and how the points can be "better spread" by using ANMS. Notice that when <i>c_robust</i> is very small, as in the last figure, the procedure may not always lead to the desired number of points.
 This is because the distribution of keypoints may be such that many points within a really large radius (that practically spans the totality of the image), are above a certain intensity, and therefore never fail the <i>c_robust</i> test. The goal for the last figure was to reach 112 points, but with a <i>c_robust</i> of 0.3, the process halted at 204 points. This means that 204 points had all intensities above 0.3 times the intensity of the maximum, and therefore could not be eliminated. On the other hand, setting <i>c_robust</i> above 1 is also problematic, given that it can potentially eliminate points with greater intensities (and therefore more likely to be features) than others within a given radius. Notice this difference in the figures below where <i>c_robust</i> is set to 1.5.
 </p>
-
+<br>
+<br>
 <div align="middle">
   <table style="width=100%">
     <tr>
@@ -234,11 +233,101 @@ This is because the distribution of keypoints may be such that many points withi
     </tr>
   </table>
 </div>
-<br><br><br>
+<br><br><br><br>
+<br><br><br><br>
 
-
-<h3 align="middle" id="Part 1">Takeaway</h3>
+<a href="#Part 2"><h2 align="middle"><b>↑</b></h2></a>
+<h3 align="middle" id="Part 3">3. Extracting and Matching Feature Descriptors</h3>
+<a href="#Part 4"><h2 align="middle"><b>↓</b></h2></a>
 <br>
+<p>
+Talk as much as you want about Aristotle and Plato, but for this project I owe my money to Pythagoras.
+</p>
+<br>
+<br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/descriptors/1.png" class="thumbnail" align="middle" width="200px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br> Randomly Sampled Feature Vector</figcaption>
+    </td>
+    <td>
+      <img src="images/descriptors/3.png" class="thumbnail" align="middle" width="200px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br> Randomly Sampled Feature Vector</figcaption>
+    </td>
+    <td>
+      <img src="images/descriptors/18.png" class="thumbnail" align="middle" width="200px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br> Randomly Sampled Feature Vector</figcaption>
+    </td>
+    <td>
+      <img src="images/descriptors/23.png" class="thumbnail" align="middle" width="200px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br> Randomly Sampled Feature Vector</figcaption>
+    </td>
+    </tr>
+    <tr>
+    <td>
+      <img src="images/descriptors/25.png" class="thumbnail" align="middle" width="200px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br> Randomly Sampled Feature Vector</figcaption>
+    </td>
+    <td>
+      <img src="images/descriptors/31.png" class="thumbnail" align="middle" width="200px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br> Randomly Sampled Feature Vector</figcaption>
+    </td>
+    <td>
+      <img src="images/descriptors/38.png" class="thumbnail" align="middle" width="200px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br> Randomly Sampled Feature Vector</figcaption>
+    </td>
+    <td>
+      <img src="images/descriptors/40.png" class="thumbnail" align="middle" width="200px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br> Randomly Sampled Feature Vector</figcaption>
+    </td>
+    </tr>
+  </table>
+</div>
+<p>
+<br>
+I can't remember how many times I used the SSD for this part. <br> For the threshold against which to evaluate 1-NN/2-NN (aka. Lowe's ratio), I chose 0.4, as this seemed to be the inflection point after which comparatively more outliers will be selected than inliers.
+</p>
+<br>
+<br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/matches_8.png" class="thumbnail" align="middle" width="600px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br> Feature matching with 8 points.</figcaption>
+    </td>
+    </tr>
+    <tr>
+    <td>
+      <img src="images/matches_313.png" class="thumbnail" align="middle" width="600px"/>
+      <br>
+      <figcaption align="middle"><b>—</b> <br> Feature matching with 313 points.</figcaption>
+    </td>
+    </tr>
+  </table>
+</div>
+<br><br><br><br>
+<br><br><br><br>
+
+<a href="#Part 3"><h2 align="middle"><b>↑</b></h2></a>
+<h3 align="middle" id="Part 4">4. Image Mosaics</h3>
+<a href="#Part 5"><h2 align="middle"><b>↓</b></h2></a>
+<br>
+<p>
+</p>
+
+
 <p>
 I really liked this project, because it required both geometric thinking (how to stitch the images together) as well a strong perceptual and aesthetic intuition (how to make the stitched images look good together). I learned the hard way that, unless the images have very similar exposure, even advanced blending techniques will fail at making them appear uniform. That said, the versatility and effectiveness of the homography impressed me. I can now easily see how a homography would be used in other problems of computer vision, such 3D reconstruction. Finally, the most important thing I learned (but did not implement yet), regards transformations in non-Euclidian space. For Part B, I plan on making a 360° panorama, by mapping the homography in spherical space.
 </p>
@@ -246,11 +335,26 @@ I really liked this project, because it required both geometric thinking (how to
 <br><br>
 
 
-<!--<a href="#Part 0"><h2 align="middle"><b>⇈</b></h2></a>-->
-<!--<br>-->
-<!--<h4 align="middle"> φaces of Νature</h4>-->
-<!--<br>-->
-<!--<br>-->
+<a href="#Part 0"><h2 align="middle"><b>⇈</b></h2></a>
+<br>
+
+<h6 align="middle"> I accidentally passed in the points of a set of planarly-mapped images<br>
+    alongside cylindrically-mapped images to my stitching algorithm.<br>
+    <br>What followed had no precedent.</h6>
+<br>
+<h2 align="middle"> Randomness </h2>
+<br>
+<br>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+    <td>
+      <img src="images/random_noise.png" class="thumbnail" align="middle" width="400px"/>
+    </td>
+    </tr>
+  </table>
+</div>
+<br>
 <hr>
 <h4 align="middle">♡☮</h4>
 <hr>
